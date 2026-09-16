@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== 深色主题设计 Token（shadcn 风格 HSL 变量） ===== */
+:root {
+  --background: 246 18% 5%;
+  --foreground: 240 20% 96%;
+  --card: 246 16% 8%;
+  --card-foreground: 240 20% 96%;
+  --popover: 246 16% 8%;
+  --popover-foreground: 240 20% 96%;
+  --primary: 258 90% 66%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 246 14% 12%;
+  --secondary-foreground: 240 20% 92%;
+  --muted: 246 12% 13%;
+  --muted-foreground: 244 8% 62%;
+  --accent: 288 84% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 350 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 246 14% 14%;
+  --input: 246 14% 16%;
+  --ring: 258 90% 66%;
+  --radius: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* 磨砂玻璃质感卡片 */
+  .glass {
+    background: rgb(255 255 255 / 0.045);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  /* 渐变文字 */
+  .text-gradient {
+    background: linear-gradient(120deg, #a78bfa 0%, #e879f9 55%, #fda4af 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* 细滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.24);
+}
+
+::selection {
+  background: hsl(258 90% 66% / 0.4);
+}

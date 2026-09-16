@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="1152" viewBox="0 0 768 1152">
+  <style>
+    @keyframes twinkle { 0%,100% { opacity: 1; } 50% { opacity: .2; } }
+    @keyframes glowb { 0%,100% { opacity: .8; } 50% { opacity: 1; } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .star { animation: twinkle 3.2s ease-in-out infinite; }
+    .glow-veil { animation: glowb 8s ease-in-out infinite; }
+    .halo-a { transform-box: view-box; transform-origin: 384px 360px; animation: spin 70s linear infinite; }
+    .halo-b { transform-box: view-box; transform-origin: 384px 360px; animation: spin 110s linear infinite reverse; }
+  </style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#0d1422"/>
+      <stop offset="0.55" stop-color="#090e18"/>
+      <stop offset="1" stop-color="#05080f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.38" r="0.75">
+      <stop offset="0" stop-color="#93c5fd" stop-opacity="0.4"/>
+      <stop offset="0.55" stop-color="#3b82f6" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bfdbfe" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#67e8f9" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+  <rect width="768" height="1152" fill="url(#bg)"/>
+  <ellipse class="glow-veil" cx="384" cy="440" rx="420" ry="500" fill="url(#glow)"/>
+  <circle cx="384" cy="360" r="130" fill="#0a101c" fill-opacity="0.85"/>
+  <path d="M 170 1152 C 190 820 300 690 384 690 C 468 690 578 820 598 1152 Z" fill="#0a101c" fill-opacity="0.85"/>
+  <g class="halo-a">
+    <circle cx="384" cy="360" r="180" fill="none" stroke="url(#ring)" stroke-width="1.5" stroke-opacity="0.6" stroke-dasharray="8 10"/>
+    <circle cx="384" cy="180" r="4" fill="#bfdbfe" fill-opacity="0.9"/>
+  </g>
+  <g class="halo-b">
+    <circle cx="384" cy="360" r="215" fill="none" stroke="#bfdbfe" stroke-width="0.75" stroke-opacity="0.25" stroke-dasharray="3 12"/>
+    <circle cx="599" cy="360" r="3" fill="#a5f3fc" fill-opacity="0.8"/>
+  </g>
+  <circle class="star" cx="180" cy="220" r="2.5" fill="#dbeafe" fill-opacity="0.8"/>
+  <circle class="star" style="animation-delay:.7s" cx="600" cy="180" r="2" fill="#a5f3fc" fill-opacity="0.7"/>
+  <circle class="star" style="animation-delay:1.4s" cx="620" cy="420" r="1.5" fill="#eff6ff" fill-opacity="0.6"/>
+  <circle class="star" style="animation-delay:2.1s" cx="150" cy="430" r="1.5" fill="#a5f3fc" fill-opacity="0.5"/>
+  <text x="384" y="980" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="76" letter-spacing="14" fill="#f0f9ff">RIN</text>
+  <text x="384" y="1042" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="30" letter-spacing="20" fill="#dbeafe">专注</text>
+  <text x="384" y="1098" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="17" letter-spacing="8" fill="#93a8c8">计划给你了，照做就行</text>
+</svg>
