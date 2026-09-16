@@ -4,10 +4,18 @@ import type { ChatTurn } from "@/types";
 
 /**
  * DeepSeek 接口地址（OpenAI 兼容格式）。
- * 换成任意 OpenAI 兼容服务的 Chat Completions 地址即可无缝切换。
+ * 注意：AI SDK 会自动追加 /chat/completions 路径，这里必须只填根地址。
+ * 换成任意 OpenAI 兼容服务的根地址即可无缝切换。
  */
 export const DEEPSEEK_BASE_URL =
-  process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com/chat/completions";
+  process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
+
+/** 防御性修正：去掉用户/配置里可能误带的 /chat/completions 或 /v1 尾巴 */
+function normalizeBaseURL(input: string): string {
+  return input
+    .replace(/\/(v1\/)?chat\/completions\/?$/, "")
+    .replace(/\/+$/, "");
+}
 
 export interface DeepSeekStreamOptions {
   apiKey: string;
@@ -39,7 +47,7 @@ export async function streamDeepSeekCompletion(
 
   const provider = createOpenAICompatible({
     name: "deepseek",
-    baseURL: baseURL ?? DEEPSEEK_BASE_URL,
+    baseURL: normalizeBaseURL(baseURL ?? DEEPSEEK_BASE_URL),
     apiKey,
   });
 
@@ -56,9 +64,21 @@ export async function streamDeepSeekCompletion(
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        for await (const text of result.textStream) {
-          controller.enqueue(encoder.encode(text));
+        for await (const part of result.fullStream) {
+          if (part.type === "text-delta") {
+            controller.enqueue(encoder.encode(part.text));
+          } else if (part.type === "error") {
+            // 上游出错（404/401/模型名无效等）：以 \u0001ERR: 标记块发出，
+            // 由路由层转成 SSE error 事件、客户端弹给用户，避免静默吞掉。
+            const message =
+              part.error instanceof Error ? part.error.message : String(part.error);
+            controller.enqueue(encoder.encode(`\u0001ERR:${message}`));
+            return;
+          }
         }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        controller.enqueue(encoder.encode(`\u0001ERR:${message}`));
       } finally {
         controller.close();
       }

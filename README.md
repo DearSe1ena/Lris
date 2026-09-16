@@ -37,7 +37,7 @@ pnpm dev
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
 | `DEEPSEEK_API_KEY` | DeepSeek API Key（必填，聊天功能用） | — |
-| `DEEPSEEK_BASE_URL` | OpenAI 兼容 Chat Completions 地址 | `https://api.deepseek.com/chat/completions` |
+| `DEEPSEEK_BASE_URL` | OpenAI 兼容服务的**根地址**（AI SDK 会自动追加 `/chat/completions`，不要带上它） | `https://api.deepseek.com` |
 
 ## 目录结构
 

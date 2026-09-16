@@ -55,13 +55,20 @@ export async function streamChat(options: StreamChatOptions): Promise<string> {
       const payload = line.slice(5).trim();
       if (!payload) continue;
       try {
-        const parsed = JSON.parse(payload) as { content?: string };
+        const parsed = JSON.parse(payload) as { content?: string; error?: string };
+        if (parsed.error) {
+          throw new Error(parsed.error);
+        }
         if (parsed.content) {
           full += parsed.content;
           onDelta(parsed.content);
         }
-      } catch {
-        // 忽略尚未完整到达的数据块
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          // 数据块尚未完整到达，忽略继续等
+          continue;
+        }
+        throw error;
       }
     }
   }

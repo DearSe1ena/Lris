@@ -66,7 +66,10 @@ export async function POST(req: NextRequest) {
       new TransformStream<Uint8Array, Uint8Array>({
         transform(chunk, controller) {
           const text = new TextDecoder().decode(chunk);
-          const data = JSON.stringify({ content: text });
+          // \u0001ERR: 标记块 → 转成 error 事件，客户端可读取并展示
+          const data = text.startsWith("\u0001ERR:")
+            ? JSON.stringify({ error: text.slice(5) })
+            : JSON.stringify({ content: text });
           controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
         },
       }),

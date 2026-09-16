@@ -92,7 +92,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             <Input
               value={urlDraft}
               onChange={(e) => setUrlDraft(e.target.value)}
-              placeholder="https://api.deepseek.com/chat/completions"
+              placeholder="https://api.deepseek.com（留空即可）"
               autoComplete="off"
             />
           </div>

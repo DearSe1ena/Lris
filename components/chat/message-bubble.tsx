@@ -14,7 +14,7 @@ interface MessageBubbleProps {
 export function MessageBubble({ message, streaming = false }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
-  // 流式等待中（还没有收到任何文字）：显示三个呼吸点
+  // 流式等待中（还没有收到任何文字）：显示思考提示 + 呼吸点
   if (!message.content && streaming) {
     return (
       <div className="flex items-end gap-2">
@@ -23,11 +23,14 @@ export function MessageBubble({ message, streaming = false }: MessageBubbleProps
           alt=""
           className="h-7 w-7 rounded-full object-cover"
         />
-        <div className="glass rounded-2xl rounded-bl-md px-4 py-3">
+        <div className="glass flex items-center gap-3 rounded-2xl rounded-bl-md px-4 py-3">
           <span className="flex gap-1">
             <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-white/60" />
             <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-white/60 [animation-delay:150ms]" />
             <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-white/60 [animation-delay:300ms]" />
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {characterConfig.displayName} 正在思考…
           </span>
         </div>
       </div>

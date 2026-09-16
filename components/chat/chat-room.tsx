@@ -90,7 +90,7 @@ export function ChatRoom() {
       if (!aborted) {
         appendContent(
           assistantId,
-          `（连接中断：${error instanceof Error ? error.message : String(error)}）`,
+          `（出错了：${error instanceof Error ? error.message : String(error)}）`,
         );
       }
     } finally {
