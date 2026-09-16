@@ -199,13 +199,18 @@ export function ChatRoom() {
     return () => clearTimeout(t);
   }, [mounted, proactive, messages.length, sendProactive]);
 
-  // 空闲一段时间后主动搭话（定时器随消息活动重置）
+  // 空闲一段时间后主动搭话（定时器随消息活动重置；夜晚晚安类需要更久的静默）
   useEffect(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     if (!mounted || !proactive || messages.length === 0 || isStreaming) return;
+    const h = new Date().getHours();
+    const isNight = h >= 21 || h < 3;
+    const delay = isNight
+      ? characterConfig.proactiveNightIdleMs
+      : characterConfig.proactiveIdleMs;
     idleTimerRef.current = setTimeout(() => {
       void sendProactive();
-    }, characterConfig.proactiveIdleMs);
+    }, delay);
     return () => {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };

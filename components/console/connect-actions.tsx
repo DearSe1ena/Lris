@@ -40,7 +40,7 @@ export function ConnectActions() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           variant="gradient"
           size="lg"

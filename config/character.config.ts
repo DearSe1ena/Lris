@@ -74,6 +74,8 @@ export interface CharacterConfig {
   suggestions: string[];
   /** 主动联系：聊天页空闲多少毫秒后主动搭话一次（之后除非你回复，不再追发） */
   proactiveIdleMs: number;
+  /** 夜晚（21点~次日3点）晚安类触发的静默阈值：比普通搭话更久，避免聊天停顿被误判为要睡觉 */
+  proactiveNightIdleMs: number;
   /** 完整背景（完整人格与成长模型）使用的 System Prompt */
   fullSystemPrompt: string;
   /** 精简背景（关键设定）使用的 System Prompt */
@@ -144,6 +146,8 @@ export const characterConfig: CharacterConfig = {
 
   /* 主动联系：空闲 2 分钟后主动搭话（不追发），想调节奏改这里 */
   proactiveIdleMs: 2 * 60 * 1000,
+  /* 夜晚晚安触发：静默 10 分钟后才道晚安，避免聊到一半被打断 */
+  proactiveNightIdleMs: 10 * 60 * 1000,
 
   /* ============ 人设（System Prompt）—— 想调整随时改这里 ============ */
 

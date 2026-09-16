@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   KeyRound,
@@ -76,14 +77,19 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   }, [open, apiKey, baseURL]);
 
-  // Esc 关闭
+  // Esc 关闭 + 锁定背景滚动（弹窗打开时）
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -163,15 +169,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  // 用 portal 渲染到 body：脱离页面滚动容器，修复 iOS Safari 上
+  // 弹窗被立绘区遮挡 / 无法滚动的问题
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* 遮罩 */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="glass relative max-h-[92dvh] w-full max-w-md animate-fade-in overflow-y-auto rounded-3xl p-6">
+      <div className="glass relative max-h-[88dvh] w-full max-w-md animate-fade-in overflow-y-auto overscroll-contain rounded-3xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" />
@@ -363,6 +371,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

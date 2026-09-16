@@ -1,9 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PERSONA · Rin — 才不是特意为你准备的",
   description: "你的专属大小姐 · AI 虚拟伴侣控制台",
+};
+
+/** 移动端（iOS Safari）适配：安全区 + 键盘弹出时收缩视口，避免输入框被键盘遮挡 */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
