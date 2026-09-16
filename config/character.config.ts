@@ -72,6 +72,8 @@ export interface CharacterConfig {
   greeting: string;
   /** 聊天室空状态的建议话题 */
   suggestions: string[];
+  /** 主动联系：聊天页空闲多少毫秒后主动搭话一次（之后除非你回复，不再追发） */
+  proactiveIdleMs: number;
   /** 完整背景（完整人格与成长模型）使用的 System Prompt */
   fullSystemPrompt: string;
   /** 精简背景（关键设定）使用的 System Prompt */
@@ -139,6 +141,9 @@ export const characterConfig: CharacterConfig = {
     "睡不着，陪我聊会儿",
     "早点睡，晚安",
   ],
+
+  /* 主动联系：空闲 2 分钟后主动搭话（不追发），想调节奏改这里 */
+  proactiveIdleMs: 2 * 60 * 1000,
 
   /* ============ 人设（System Prompt）—— 想调整随时改这里 ============ */
 

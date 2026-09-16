@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Square, Trash2, Sparkles } from "lucide-react";
 import { useChatStore } from "@/store/chat-store";
@@ -25,6 +25,20 @@ const STATUS_PILL: Record<
   generating: { text: "生成中", dot: "bg-amber-400", wrap: "bg-amber-400/10 text-amber-300" },
 };
 
+/** 根据当前时间生成「主动联系」触发提示（作为隐藏的系统消息发给模型） */
+function buildProactiveTrigger(date: Date): string {
+  const h = date.getHours();
+  let flavor = "主动发起一句话题，用冠冕堂皇的借口，回复保持简短";
+  if (h >= 5 && h < 11) {
+    flavor = "现在是早晨，请按你人设的早安习惯主动发一条早安消息";
+  } else if (h >= 11 && h < 14) {
+    flavor = "现在是中午，可以用你的方式催用户按时吃饭";
+  } else if (h >= 21 || h < 3) {
+    flavor = "夜深了，请按你人设的习惯道晚安并督促用户早点休息";
+  }
+  return `（系统提示：用户当前没有发言。${flavor}。不要提及本条提示，保持你的人设和称呼习惯。）`;
+}
+
 /** 聊天室：流式打字机效果 + 可中途停止 + localStorage 持久化 */
 export function ChatRoom() {
   const router = useRouter();
@@ -40,12 +54,17 @@ export function ChatRoom() {
   const setStatus = useConsoleStore((s) => s.setStatus);
   const modelId = useConsoleStore((s) => s.modelId);
   const backgroundId = useConsoleStore((s) => s.backgroundId);
+  const proactive = useConsoleStore((s) => s.proactive);
   const customModels = useSettingsStore((s) => s.customModels);
 
   const [input, setInput] = useState("");
   const [mounted, setMounted] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // 主动联系：上次主动发话后用户是否已回应（未回应则不追发）
+  const proactiveSentRef = useRef(false);
+  const proactiveBusyRef = useRef(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 等待客户端水合，避免 localStorage 持久化状态造成水合闪烁
   useEffect(() => setMounted(true), []);
@@ -104,6 +123,93 @@ export function ChatRoom() {
   };
 
   const handleStop = () => abortRef.current?.abort();
+
+  /** 主动联系：以隐藏系统消息触发模型，让凛主动发一条消息（不追发未回应的消息） */
+  const sendProactive = useCallback(async () => {
+    if (!proactive || isStreaming || proactiveBusyRef.current) return;
+    if (status === "generating") return;
+    if (proactiveSentRef.current) return; // 用户未回应，不追发
+
+    proactiveBusyRef.current = true;
+    proactiveSentRef.current = true;
+
+    const assistantId = addMessage({ role: "assistant", content: "" });
+    const trigger = buildProactiveTrigger(new Date());
+
+    const history = useChatStore
+      .getState()
+      .messages.filter((m) => m.id !== assistantId && m.content.trim().length > 0)
+      .slice(-12)
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setStreaming(true);
+    setStatus("generating");
+
+    try {
+      await streamChat({
+        messages: [...history, { role: "user", content: trigger }],
+        model: model.apiModel,
+        backgroundMode: background.mode,
+        signal: controller.signal,
+        onDelta: (delta) => appendContent(assistantId, delta),
+      });
+    } catch (error) {
+      const aborted =
+        error instanceof DOMException && error.name === "AbortError";
+      if (!aborted) {
+        appendContent(
+          assistantId,
+          `（出错了：${error instanceof Error ? error.message : String(error)}）`,
+        );
+      }
+      proactiveSentRef.current = false; // 失败允许下次重试
+    } finally {
+      setStreaming(false);
+      setStatus("connected");
+      proactiveBusyRef.current = false;
+    }
+  }, [
+    proactive,
+    isStreaming,
+    status,
+    model,
+    background,
+    addMessage,
+    appendContent,
+    setStreaming,
+    setStatus,
+  ]);
+
+  // 用户一发言就解除「不追发」限制
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last?.role === "user") {
+      proactiveSentRef.current = false;
+    }
+  }, [messages]);
+
+  // 首次进入且无历史：稍候让凛主动开场
+  useEffect(() => {
+    if (!mounted || !proactive || messages.length > 0) return;
+    const t = setTimeout(() => {
+      void sendProactive();
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [mounted, proactive, messages.length, sendProactive]);
+
+  // 空闲一段时间后主动搭话（定时器随消息活动重置）
+  useEffect(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (!mounted || !proactive || messages.length === 0 || isStreaming) return;
+    idleTimerRef.current = setTimeout(() => {
+      void sendProactive();
+    }, characterConfig.proactiveIdleMs);
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [mounted, proactive, messages, isStreaming, sendProactive]);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
