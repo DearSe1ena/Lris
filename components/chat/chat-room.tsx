@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Square, Trash2, Sparkles } from "lucide-react";
 import { useChatStore } from "@/store/chat-store";
 import { useConsoleStore } from "@/store/console-store";
+import { useSettingsStore } from "@/store/settings-store";
 import {
   characterConfig,
   modelOptions,
@@ -39,6 +40,7 @@ export function ChatRoom() {
   const setStatus = useConsoleStore((s) => s.setStatus);
   const modelId = useConsoleStore((s) => s.modelId);
   const backgroundId = useConsoleStore((s) => s.backgroundId);
+  const customModels = useSettingsStore((s) => s.customModels);
 
   const [input, setInput] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -52,7 +54,9 @@ export function ChatRoom() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const model = modelOptions.find((m) => m.id === modelId) ?? modelOptions[0];
+  const model = [...modelOptions, ...customModels].find(
+    (m) => m.id === modelId,
+  ) ?? modelOptions[0];
   const background =
     backgroundPacks.find((b) => b.id === backgroundId) ?? backgroundPacks[0];
 

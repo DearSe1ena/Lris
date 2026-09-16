@@ -17,8 +17,10 @@ export function ConnectActions() {
   const toggleProactive = useConsoleStore((s) => s.toggleProactive);
   const connect = useConsoleStore((s) => s.connect);
   const disconnect = useConsoleStore((s) => s.disconnect);
+  const settingsOpen = useConsoleStore((s) => s.settingsOpen);
+  const openSettings = useConsoleStore((s) => s.openSettings);
+  const closeSettings = useConsoleStore((s) => s.closeSettings);
   const [connecting, setConnecting] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleConnect = () => {
     if (connecting || status === "generating") return;
@@ -67,7 +69,7 @@ export function ConnectActions() {
           variant="outline"
           size="icon"
           className="ml-auto h-12 w-12 rounded-2xl"
-          onClick={() => setSettingsOpen(true)}
+          onClick={openSettings}
           aria-label="API 设置"
         >
           <Settings2 className="h-5 w-5" />
@@ -88,7 +90,7 @@ export function ConnectActions() {
         />
       </div>
 
-      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsDialog open={settingsOpen} onClose={closeSettings} />
     </div>
   );
 }

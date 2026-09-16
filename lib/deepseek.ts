@@ -11,7 +11,7 @@ export const DEEPSEEK_BASE_URL =
   process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
 
 /** 防御性修正：去掉用户/配置里可能误带的 /chat/completions 或 /v1 尾巴 */
-function normalizeBaseURL(input: string): string {
+export function normalizeBaseURL(input: string): string {
   return input
     .replace(/\/(v1\/)?chat\/completions\/?$/, "")
     .replace(/\/+$/, "");
