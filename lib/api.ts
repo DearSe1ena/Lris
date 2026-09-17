@@ -8,6 +8,17 @@ export interface StreamChatOptions {
   /** 每收到一段增量文本时回调，用于打字机效果 */
   onDelta: (text: string) => void;
   signal?: AbortSignal;
+  /** 长期记忆条目（注入 System Prompt，让凛跨会话记住） */
+  memories?: string[];
+}
+
+/** 生成用户本地时间上下文（让凛知道现在几月几号、星期几、几点） */
+function buildTimeContext(date: Date): string {
+  const week = ["日", "一", "二", "三", "四", "五", "六"];
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 星期${
+    week[date.getDay()]
+  } ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 /**
@@ -15,7 +26,7 @@ export interface StreamChatOptions {
  * 逐段回调 onDelta，返回完整回复文本。
  */
 export async function streamChat(options: StreamChatOptions): Promise<string> {
-  const { messages, model, backgroundMode, onDelta, signal } = options;
+  const { messages, model, backgroundMode, onDelta, signal, memories } = options;
 
   // 页面「API 设置」里填写的配置优先；留空则服务端回退到 .env.local
   const settings = useSettingsStore.getState();
@@ -29,6 +40,8 @@ export async function streamChat(options: StreamChatOptions): Promise<string> {
       backgroundMode,
       apiKey: settings.apiKey || undefined,
       baseURL: settings.baseURL || undefined,
+      timeContext: buildTimeContext(new Date()),
+      memories: memories ?? [],
     }),
     signal,
   });

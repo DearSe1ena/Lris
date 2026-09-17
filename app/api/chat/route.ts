@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
     /** 页面「API 设置」传入，优先于服务端环境变量 */
     apiKey?: string;
     baseURL?: string;
+    /** 用户本地时间上下文（客户端生成） */
+    timeContext?: string;
+    /** 长期记忆条目 */
+    memories?: string[];
   };
   try {
     payload = await req.json();
@@ -32,6 +36,8 @@ export async function POST(req: NextRequest) {
     backgroundMode = "full",
     apiKey: clientKey,
     baseURL: clientUrl,
+    timeContext,
+    memories,
   } = payload ?? {};
 
   const apiKey = clientKey?.trim() || process.env.DEEPSEEK_API_KEY;
@@ -53,10 +59,32 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // 组装 System Prompt：人设 + 当前时间 + 长期记忆
+    const promptParts: string[] = [buildSystemPrompt(backgroundMode)];
+
+    if (timeContext?.trim()) {
+      promptParts.push(
+        `【当前时间】${timeContext.trim()}（这是用户本地时间。涉及日期、星期、几点的话题请以此为准，不要臆测。）`,
+      );
+    }
+
+    if (Array.isArray(memories) && memories.length > 0) {
+      const items = memories
+        .filter((m) => m.trim())
+        .slice(0, 20)
+        .map((m) => `- ${m.trim()}`)
+        .join("\n");
+      if (items) {
+        promptParts.push(
+          `【关于用户的记忆】（这些是你已经知道的事，请自然地记住并在合适时体现，不要逐条复述或生硬提及）\n${items}`,
+        );
+      }
+    }
+
     const upstream = await streamDeepSeekCompletion({
       apiKey,
       model,
-      systemPrompt: buildSystemPrompt(backgroundMode),
+      systemPrompt: promptParts.join("\n\n"),
       messages,
       signal: req.signal,
       baseURL: clientUrl?.trim() || undefined,

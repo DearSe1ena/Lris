@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, Square, Trash2, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Square, Trash2, Sparkles, BookHeart } from "lucide-react";
 import { useChatStore } from "@/store/chat-store";
 import { useConsoleStore } from "@/store/console-store";
 import { useSettingsStore } from "@/store/settings-store";
+import { useMemoryStore } from "@/store/memory-store";
 import {
   characterConfig,
   modelOptions,
@@ -13,6 +14,7 @@ import {
 } from "@/config/character.config";
 import { streamChat } from "@/lib/api";
 import { MessageBubble } from "@/components/chat/message-bubble";
+import { MemoryDialog } from "@/components/chat/memory-dialog";
 import { cn } from "@/lib/utils";
 import type { ConnectionStatus } from "@/types";
 
@@ -70,9 +72,11 @@ export function ChatRoom() {
   const backgroundId = useConsoleStore((s) => s.backgroundId);
   const proactive = useConsoleStore((s) => s.proactive);
   const customModels = useSettingsStore((s) => s.customModels);
+  const memories = useMemoryStore((s) => s.memories);
 
   const [input, setInput] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   // 主动联系：上次主动发话后用户是否已回应（未回应则不追发）
@@ -119,6 +123,7 @@ export function ChatRoom() {
         model: model.apiModel,
         backgroundMode: background.mode,
         signal: controller.signal,
+        memories: memories.map((m) => m.content),
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {
@@ -164,6 +169,7 @@ export function ChatRoom() {
         model: model.apiModel,
         backgroundMode: background.mode,
         signal: controller.signal,
+        memories: memories.map((m) => m.content),
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {
@@ -184,6 +190,7 @@ export function ChatRoom() {
     status,
     model,
     background,
+    memories,
     addMessage,
     appendContent,
     setStreaming,
@@ -275,6 +282,14 @@ export function ChatRoom() {
           />
           {pill.text}
         </span>
+
+        <button
+          onClick={() => setMemoryOpen(true)}
+          className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
+          aria-label="记忆簿"
+        >
+          <BookHeart className="h-4 w-4" />
+        </button>
 
         <button
           onClick={clear}
@@ -377,6 +392,8 @@ export function ChatRoom() {
           )}
         </div>
       </form>
+
+      <MemoryDialog open={memoryOpen} onClose={() => setMemoryOpen(false)} />
     </main>
   );
 }

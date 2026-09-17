@@ -4,6 +4,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PERSONA · Rin — 才不是特意为你准备的",
   description: "你的专属大小姐 · AI 虚拟伴侣控制台",
+  appleWebApp: {
+    capable: true,
+    title: "凛",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 /** 移动端（iOS Safari）适配：安全区 + 键盘弹出时收缩视口，避免输入框被键盘遮挡 */
