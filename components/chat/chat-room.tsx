@@ -39,12 +39,17 @@ function buildProactiveTrigger(date: Date): string {
   return `（系统提示：用户当前没有发言。${flavor}。不要提及本条提示，保持你的人设和称呼习惯。）`;
 }
 
-/** 格式化聊天错误；模型相关错误附带自查提示 */
+/** 格式化聊天错误；按错误类型附带自查提示 */
 function formatChatError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  const hint = /model/i.test(message)
-    ? "（提示：该 API 可能不支持此模型名，可到 ⚙「API 设置」→「检测可用模型」查看支持的模型）"
-    : "";
+  let hint = "";
+  if (/model/i.test(message)) {
+    hint = "（提示：该 API 可能不支持此模型名，可到 ⚙「API 设置」→「检测可用模型」查看支持的模型）";
+  } else if (/unauthorized|authentication|401/i.test(message)) {
+    hint = "（提示：Key 被拒绝，或该模型需要更高权限——请到 ⚙ 检查 Key 是否正确、或改用 Flash 模型）";
+  } else if (/load failed|failed to fetch|networkerror|timeout/i.test(message)) {
+    hint = "（连接中断或响应超时：可重试一次，或改用 Flash 模型）";
+  }
   return `（出错了：${message}）${hint}`;
 }
 

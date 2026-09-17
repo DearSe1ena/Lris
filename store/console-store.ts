@@ -3,7 +3,6 @@
 import { create } from "zustand";
 import {
   characterConfig,
-  modelOptions,
   backgroundPacks,
   type BackgroundId,
 } from "@/config/character.config";
@@ -32,7 +31,7 @@ interface ConsoleState {
 export const useConsoleStore = create<ConsoleState>()((set) => ({
   status: "idle",
   portraitId: characterConfig.defaultPortraitId,
-  modelId: modelOptions[0].id,
+  modelId: "deepseek-flash",
   backgroundId: backgroundPacks[0].id,
   proactive: true,
   settingsOpen: false,

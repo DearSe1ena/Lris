@@ -92,13 +92,13 @@ export const modelOptions: ModelOption[] = [
     title: "DeepSeek Pro",
     description: "deepseek-v4-pro",
     apiModel: "deepseek-v4-pro",
-    badge: "推荐",
   },
   {
     id: "deepseek-flash",
     title: "DeepSeek Flash",
     description: "deepseek-v4-flash",
     apiModel: "deepseek-v4-flash",
+    badge: "推荐",
   },
 ];
 
