@@ -39,6 +39,15 @@ function buildProactiveTrigger(date: Date): string {
   return `（系统提示：用户当前没有发言。${flavor}。不要提及本条提示，保持你的人设和称呼习惯。）`;
 }
 
+/** 格式化聊天错误；模型相关错误附带自查提示 */
+function formatChatError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const hint = /model/i.test(message)
+    ? "（提示：该 API 可能不支持此模型名，可到 ⚙「API 设置」→「检测可用模型」查看支持的模型）"
+    : "";
+  return `（出错了：${message}）${hint}`;
+}
+
 /** 聊天室：流式打字机效果 + 可中途停止 + localStorage 持久化 */
 export function ChatRoom() {
   const router = useRouter();
@@ -111,10 +120,7 @@ export function ChatRoom() {
       const aborted =
         error instanceof DOMException && error.name === "AbortError";
       if (!aborted) {
-        appendContent(
-          assistantId,
-          `（出错了：${error instanceof Error ? error.message : String(error)}）`,
-        );
+        appendContent(assistantId, formatChatError(error));
       }
     } finally {
       setStreaming(false);
@@ -159,10 +165,7 @@ export function ChatRoom() {
       const aborted =
         error instanceof DOMException && error.name === "AbortError";
       if (!aborted) {
-        appendContent(
-          assistantId,
-          `（出错了：${error instanceof Error ? error.message : String(error)}）`,
-        );
+        appendContent(assistantId, formatChatError(error));
       }
       proactiveSentRef.current = false; // 失败允许下次重试
     } finally {
@@ -346,7 +349,7 @@ export function ChatRoom() {
             }}
             rows={1}
             placeholder={`和 ${characterConfig.displayName} 说点什么…`}
-            className="glass max-h-40 min-h-[44px] flex-1 resize-none rounded-2xl bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            className="glass max-h-40 min-h-[44px] flex-1 resize-none rounded-2xl bg-transparent px-4 py-3 text-base outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40 sm:text-sm"
           />
           {isStreaming ? (
             <button

@@ -9,7 +9,7 @@
 - 完整人设存档：`config/persona-rin.md`（身份、外貌锚点、四状态造型、性格、说话风格、记忆/吃醋机制、示例对话）
 - 生效的 System Prompt：`config/character.config.ts` 的 `fullSystemPrompt`（完整人格）与 `liteSystemPrompt`（精简设定）
 - 聊天室开场白与建议话题：同文件的 `greeting` / `suggestions` 字段
-- 立绘：三个状态的占位图在 `public/portraits/`（名流 / 午后 / 专注），真实图到位后替换同名文件即可；支持动态立绘——给 `config/character.config.ts` 的 `portraits[].motion` 填 mp4/webm 视频或动图地址即可自动循环播放，静态图则自带 Ken Burns 缓慢推近动效
+- 立绘：两个状态的占位图在 `public/portraits/`（名流 / 午后），真实图到位后替换同名文件即可；支持动态立绘——给 `config/character.config.ts` 的 `portraits[].motion` 填 mp4/webm 视频或动图地址即可自动循环播放，静态图则自带 Ken Burns 缓慢推近动效
 
 ## 功能特性
 

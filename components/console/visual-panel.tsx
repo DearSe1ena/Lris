@@ -98,13 +98,15 @@ export function VisualPanel() {
         <h2 className="text-5xl font-bold tracking-wide text-white drop-shadow-lg lg:text-6xl">
           {characterConfig.displayName}
         </h2>
-        <p className="mt-2 text-sm tracking-widest text-white/75">
-          {characterConfig.companionTitle}
-        </p>
+        {characterConfig.companionTitle && (
+          <p className="mt-2 text-sm tracking-widest text-white/75">
+            {characterConfig.companionTitle}
+          </p>
+        )}
       </div>
 
-      {/* 底部缩略图切换 */}
-      <div className="absolute bottom-6 left-6 right-6 z-10 flex gap-3 lg:left-8 lg:right-8">
+      {/* 底部缩略图切换（居中放大） */}
+      <div className="absolute bottom-6 left-6 right-6 z-10 flex justify-center gap-4 lg:left-8 lg:right-8">
         {characterConfig.portraits.map((p) => {
           const active = p.id === portraitId;
           return (
@@ -114,7 +116,7 @@ export function VisualPanel() {
               onClick={() => setPortrait(p.id)}
               aria-label={`切换至${p.label}`}
               className={cn(
-                "group relative flex-1 overflow-hidden rounded-2xl border transition-all duration-300",
+                "group relative w-[42%] overflow-hidden rounded-2xl border transition-all duration-300",
                 active
                   ? "border-white/90 shadow-lg shadow-black/40 ring-2 ring-white/40"
                   : "border-white/15 opacity-70 hover:opacity-100",
@@ -124,7 +126,7 @@ export function VisualPanel() {
                 src={p.src}
                 alt={p.alt}
                 style={p.thumbPosition ? { objectPosition: p.thumbPosition } : undefined}
-                className="h-16 w-full object-cover transition-transform duration-300 group-hover:scale-105 lg:h-20"
+                className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-105 lg:h-24"
               />
               <span
                 className={cn(
