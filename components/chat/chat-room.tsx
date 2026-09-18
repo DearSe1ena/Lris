@@ -7,6 +7,8 @@ import { useChatStore } from "@/store/chat-store";
 import { useConsoleStore } from "@/store/console-store";
 import { useSettingsStore } from "@/store/settings-store";
 import { useMemoryStore } from "@/store/memory-store";
+import { useKnowledgeStore } from "@/store/knowledge-store";
+import { retrieveTopK } from "@/lib/retrieval";
 import {
   characterConfig,
   modelOptions,
@@ -112,6 +114,9 @@ export function ChatRoom() {
       .slice(-12)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
+    // 知识库检索（轻量 RAG）：以本条消息为查询召回相关资料
+    const contexts = retrieveTopK(text, useKnowledgeStore.getState().entries);
+
     const controller = new AbortController();
     abortRef.current = controller;
     setStreaming(true);
@@ -124,6 +129,7 @@ export function ChatRoom() {
         backgroundMode: background.mode,
         signal: controller.signal,
         memories: memories.map((m) => m.content),
+        contexts,
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {
@@ -158,6 +164,11 @@ export function ChatRoom() {
       .slice(-12)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
+    // 以最近一条用户消息为查询，召回知识库相关资料
+    const lastUser =
+      [...history].reverse().find((m) => m.role === "user")?.content ?? "";
+    const contexts = retrieveTopK(lastUser, useKnowledgeStore.getState().entries);
+
     const controller = new AbortController();
     abortRef.current = controller;
     setStreaming(true);
@@ -170,6 +181,7 @@ export function ChatRoom() {
         backgroundMode: background.mode,
         signal: controller.signal,
         memories: memories.map((m) => m.content),
+        contexts,
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {

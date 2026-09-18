@@ -23,6 +23,8 @@ export async function POST(req: NextRequest) {
     timeContext?: string;
     /** 长期记忆条目 */
     memories?: string[];
+    /** 知识库检索命中的参考资料（轻量 RAG） */
+    contexts?: string[];
   };
   try {
     payload = await req.json();
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
     baseURL: clientUrl,
     timeContext,
     memories,
+    contexts,
   } = payload ?? {};
 
   const apiKey = clientKey?.trim() || process.env.DEEPSEEK_API_KEY;
@@ -77,6 +80,18 @@ export async function POST(req: NextRequest) {
       if (items) {
         promptParts.push(
           `【关于用户的记忆】（这些是你已经知道的事，请自然地记住并在合适时体现，不要逐条复述或生硬提及）\n${items}`,
+        );
+      }
+    }
+
+    if (Array.isArray(contexts) && contexts.length > 0) {
+      const items = contexts
+        .filter((c) => c.trim())
+        .slice(0, 5)
+        .map((c) => c.trim());
+      if (items.length) {
+        promptParts.push(
+          `【参考资料】（与当前话题相关的背景资料，可自然引用其中的信息来回答，但不要提及"资料""检索"等字眼）\n${items.join("\n---\n")}`,
         );
       }
     }

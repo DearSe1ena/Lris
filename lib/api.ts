@@ -10,6 +10,8 @@ export interface StreamChatOptions {
   signal?: AbortSignal;
   /** 长期记忆条目（注入 System Prompt，让凛跨会话记住） */
   memories?: string[];
+  /** 知识库检索命中的参考资料（轻量 RAG 上下文注入） */
+  contexts?: string[];
 }
 
 /** 生成用户本地时间上下文（让凛知道现在几月几号、星期几、几点） */
@@ -26,7 +28,7 @@ function buildTimeContext(date: Date): string {
  * 逐段回调 onDelta，返回完整回复文本。
  */
 export async function streamChat(options: StreamChatOptions): Promise<string> {
-  const { messages, model, backgroundMode, onDelta, signal, memories } = options;
+  const { messages, model, backgroundMode, onDelta, signal, memories, contexts } = options;
 
   // 页面「API 设置」里填写的配置优先；留空则服务端回退到 .env.local
   const settings = useSettingsStore.getState();
@@ -42,6 +44,7 @@ export async function streamChat(options: StreamChatOptions): Promise<string> {
       baseURL: settings.baseURL || undefined,
       timeContext: buildTimeContext(new Date()),
       memories: memories ?? [],
+      contexts: contexts ?? [],
     }),
     signal,
   });
