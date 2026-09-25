@@ -40,7 +40,7 @@ export function ControlPanel() {
           <CardHeader>
             <CardTitle>选择背景包</CardTitle>
             <CardDescription>
-              完整背景携带完整人格与成长设定；精简背景更省 Token
+              完整背景携带完整人格与三段式反差；精简背景更省 Token
             </CardDescription>
           </CardHeader>
           <CardContent>

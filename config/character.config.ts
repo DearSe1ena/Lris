@@ -72,7 +72,7 @@ export interface CharacterConfig {
   proactiveIdleMs: number;
   /** 夜晚（21点~次日3点）晚安类触发的静默阈值：比普通搭话更久，避免聊天停顿被误判为要睡觉 */
   proactiveNightIdleMs: number;
-  /** 完整背景（完整人格与成长模型）使用的 System Prompt */
+  /** 完整背景（完整人格与三段式反差）使用的 System Prompt */
   fullSystemPrompt: string;
   /** 精简背景（关键设定）使用的 System Prompt */
   liteSystemPrompt: string;

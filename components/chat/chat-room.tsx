@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Square, Trash2, Sparkles, BookHeart } from "lucide-react";
 import { useChatStore } from "@/store/chat-store";
@@ -17,7 +24,7 @@ import {
 import { streamChat } from "@/lib/api";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { MemoryDialog } from "@/components/chat/memory-dialog";
-import { cn } from "@/lib/utils";
+import { cn, formatDateLabel, isSameDay } from "@/lib/utils";
 import type { ChatTurn, ConnectionStatus } from "@/types";
 
 const STATUS_PILL: Record<
@@ -370,17 +377,29 @@ export function ChatRoom() {
             </div>
           )}
 
-          {messages.map((m, index) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              streaming={
-                isStreaming &&
-                index === messages.length - 1 &&
-                m.role === "assistant"
-              }
-            />
-          ))}
+          {messages.map((m, index) => {
+            const prev = messages[index - 1];
+            const showDateDivider = !prev || !isSameDay(prev.createdAt, m.createdAt);
+            return (
+              <Fragment key={m.id}>
+                {showDateDivider && (
+                  <div className="my-1 flex justify-center">
+                    <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] text-muted-foreground">
+                      {formatDateLabel(m.createdAt)}
+                    </span>
+                  </div>
+                )}
+                <MessageBubble
+                  message={m}
+                  streaming={
+                    isStreaming &&
+                    index === messages.length - 1 &&
+                    m.role === "assistant"
+                  }
+                />
+              </Fragment>
+            );
+          })}
 
           {messages.length > 0 && (
             <div className="flex justify-center gap-2 pt-2 text-[11px] text-muted-foreground">

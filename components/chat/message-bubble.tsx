@@ -2,7 +2,7 @@
 
 import type { ChatMessage } from "@/store/chat-store";
 import { characterConfig } from "@/config/character.config";
-import { cn } from "@/lib/utils";
+import { cn, formatTime } from "@/lib/utils";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -50,16 +50,26 @@ export function MessageBubble({ message, streaming = false }: MessageBubbleProps
       )}
       <div
         className={cn(
-          "max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-4 py-3 text-sm leading-relaxed",
+          "flex max-w-[78%] flex-col rounded-2xl px-4 py-3 text-sm leading-relaxed",
           isUser
             ? "rounded-br-md bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20"
             : "glass rounded-bl-md",
         )}
       >
-        {message.content}
-        {streaming && (
-          <span className="ml-0.5 inline-block h-4 w-0.5 animate-blink bg-primary align-text-bottom" />
-        )}
+        <div className="whitespace-pre-wrap break-words">
+          {message.content}
+          {streaming && (
+            <span className="ml-0.5 inline-block h-4 w-0.5 animate-blink bg-primary align-text-bottom" />
+          )}
+        </div>
+        <span
+          className={cn(
+            "mt-1 self-end text-[10px] leading-none",
+            isUser ? "text-white/70" : "text-muted-foreground/80",
+          )}
+        >
+          {formatTime(message.createdAt)}
+        </span>
       </div>
     </div>
   );

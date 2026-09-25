@@ -87,7 +87,7 @@ rin-companion/
 - `name` / `displayName` / `tagline` / `companionTitle` — 名称与标语
 - `avatar` — 圆形头像（顶栏 / 气泡 / 空状态）
 - `portraits[]` — 立绘数组（状态/表情/服装），文件放 `public/portraits/`，替换同名文件即可换图，或改 `src` 指向新文件
-- `fullSystemPrompt` — 完整背景（完整人格与成长模型）的 System Prompt
+- `fullSystemPrompt` — 完整背景（完整人格与三段式反差）的 System Prompt
 - `liteSystemPrompt` — 精简背景（关键设定）的 System Prompt
 - `modelOptions[]` — 模型卡片（标题/描述/`apiModel` 实际模型名）
 - `backgroundPacks[]` — 背景包选项
