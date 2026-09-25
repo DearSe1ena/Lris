@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { makeId } from "@/lib/id";
 
 export interface ChatMessage {
   id: string;
@@ -20,14 +21,7 @@ interface ChatState {
   clear: () => void;
 }
 
-function makeId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-/** 聊天记录持久化到 localStorage（key: lucia-chat-v1），刷新不丢 */
+/** 聊天记录持久化到 localStorage（key: rin-chat-v1），刷新不丢 */
 export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({

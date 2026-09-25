@@ -54,7 +54,7 @@ function PortraitMedia({ portrait }: { portrait: Portrait }) {
 
 /**
  * 左侧人物视觉展示区（桌面端占 40% 宽度）：
- * 全屏大图（微动效）+ 呼吸氛围光 + 左上品牌区 + 左下标题区 + 底部 4 个缩略图切换。
+ * 全屏大图（微动效）+ 呼吸氛围光 + 左上品牌区 + 左下标题区 + 底部立绘缩略图切换（默认 3 个，自适应均分）。
  */
 export function VisualPanel() {
   const portraitId = useConsoleStore((s) => s.portraitId);
@@ -116,7 +116,7 @@ export function VisualPanel() {
               onClick={() => setPortrait(p.id)}
               aria-label={`切换至${p.label}`}
               className={cn(
-                "group relative w-[42%] overflow-hidden rounded-2xl border transition-all duration-300",
+                "group relative min-w-0 flex-1 overflow-hidden rounded-2xl border transition-all duration-300",
                 active
                   ? "border-white/90 shadow-lg shadow-black/40 ring-2 ring-white/40"
                   : "border-white/15 opacity-70 hover:opacity-100",

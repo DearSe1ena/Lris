@@ -19,7 +19,7 @@ export function MessageBubble({ message, streaming = false }: MessageBubbleProps
     return (
       <div className="flex items-end gap-2">
         <img
-          src={characterConfig.portraits[0].src}
+          src={characterConfig.avatar}
           alt=""
           className="h-7 w-7 rounded-full object-cover"
         />
@@ -43,7 +43,7 @@ export function MessageBubble({ message, streaming = false }: MessageBubbleProps
     <div className={cn("flex items-end gap-2", isUser && "justify-end")}>
       {!isUser && (
         <img
-          src={characterConfig.portraits[0].src}
+          src={characterConfig.avatar}
           alt=""
           className="h-7 w-7 shrink-0 rounded-full object-cover"
         />

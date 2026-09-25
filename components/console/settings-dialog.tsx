@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSettingsStore } from "@/store/settings-store";
+import { useDialogLock } from "@/hooks/use-dialog-lock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -78,19 +79,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   }, [open, apiKey, baseURL]);
 
   // Esc 关闭 + 锁定背景滚动（弹窗打开时）
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
+  useDialogLock(open, onClose);
 
   if (!open) return null;
 

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { makeId } from "@/lib/id";
 
 export interface MemoryEntry {
   id: string;
@@ -14,13 +15,6 @@ interface MemoryState {
   addMemory: (content: string) => void;
   removeMemory: (id: string) => void;
   clearMemories: () => void;
-}
-
-function makeId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /** 长期记忆：保存在本机浏览器 localStorage（key: rin-memories-v1），每次请求注入 System Prompt */

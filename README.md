@@ -1,23 +1,25 @@
-# PERSONA · Rin — AI 虚拟伴侣控制台
+# PERSONA · Iris — AI 虚拟伴侣控制台
 
-参考「PERSONA Lucia」设计稿实现的深色磨砂玻璃风格虚拟伴侣前端：左侧人物立绘展示（40%），右侧模型 / 背景 / 连接控制台；点击「连接」进入流式聊天室。
+参考「PERSONA Lucia」设计稿实现的深色磨砂玻璃风格虚拟伴侣前端：左侧人物立绘展示（约 30%），右侧模型 / 背景 / 连接控制台；点击「连接」进入流式聊天室。
 
 > 技术栈：Next.js 14 (App Router) · React 18 · Tailwind CSS 3 · Zustand 5 · lucide-react · Vercel AI SDK（流式）· DeepSeek（OpenAI 兼容接口）
 
-## 当前人设：凛（Rin）
+## 当前人设：简璃（Iris）
 
-- 完整人设存档：`config/persona-rin.md`（身份、外貌锚点、四状态造型、性格、说话风格、记忆/吃醋机制、示例对话）
+- 完整人设存档：`config/persona-iris.md`（身份、外貌锚点、三段式反差、性格、说话风格、记忆/主动联系机制、示例对话）
 - 生效的 System Prompt：`config/character.config.ts` 的 `fullSystemPrompt`（完整人格）与 `liteSystemPrompt`（精简设定）
 - 聊天室开场白与建议话题：同文件的 `greeting` / `suggestions` 字段
-- 立绘：两个状态的占位图在 `public/portraits/`（名流 / 午后），真实图到位后替换同名文件即可；支持动态立绘——给 `config/character.config.ts` 的 `portraits[].motion` 填 mp4/webm 视频或动图地址即可自动循环播放，静态图则自带 Ken Burns 缓慢推近动效
+- 头像：`public/portraits/iris-avatar.jpg`（顶栏 / 聊天气泡 / 空状态圆形头像，`avatar` 字段指向）
+- 立绘：三张状态图在 `public/portraits/`（游戏 / 私房 / 冬日），真实图到位后替换同名文件即可；支持动态立绘——给 `config/character.config.ts` 的 `portraits[].motion` 填 mp4/webm 视频或动图地址即可自动循环播放，静态图则自带 Ken Burns 缓慢推近动效
 
 ## 功能特性
 
-- **配置驱动**：人物名称、简介、立绘、System Prompt 全部集中在 `config/character.config.ts`，改配置零组件改动
-- **左侧视觉区**：大图 `object-cover` 自适应 + 左下角大标题标语 + 底部 4 个立绘缩略图无缝切换
-- **右侧控制区**：连接状态指示（未连接/已连接/生成中）、统计面板（占位）、模型卡片单选、背景包单选、连接/停止按钮、主动联系开关
+- **配置驱动**：人物名称、简介、头像、立绘、System Prompt 全部集中在 `config/character.config.ts`，改配置零组件改动
+- **左侧视觉区**：大图 `object-cover` 自适应 + 左下角大标题标语 + 底部 3 个立绘缩略图均分无缝切换
+- **右侧控制区**：连接状态指示（未连接/已连接/生成中）、实时统计面板、模型卡片单选、背景包单选、连接/停止按钮、主动联系开关
 - **聊天室**：流式打字机效果、可中途停止、上下文窗口（最近 12 条）、建议开场白
-- **持久化**：聊天记录 localStorage 保存（zustand persist），刷新不丢
+- **持久化**：聊天记录 / 记忆 / 知识库 / API 设置均 localStorage 保存（zustand persist），刷新不丢
+- **记忆 + 轻量 RAG**：记忆注入 System Prompt；知识库粘贴资料自动检索注入
 - **接口**：服务端 `/api/chat` 走 Vercel AI SDK 调用 DeepSeek，换环境变量即可切任意 OpenAI 兼容服务
 
 ## 快速开始
@@ -42,29 +44,36 @@ pnpm dev
 ## 目录结构
 
 ```
-lucia-companion/
+rin-companion/
 ├── app/
 │   ├── api/chat/route.ts        # DeepSeek 流式 SSE 路由（AI SDK streamText）
+│   ├── api/models/route.ts      # 可用模型检测
+│   ├── api/balance/route.ts     # 余额查询
 │   ├── chat/page.tsx            # 聊天室页面
 │   ├── layout.tsx               # 根布局（dark 主题）
 │   ├── page.tsx                 # 控制台主页（左右分栏）
 │   ├── globals.css              # 深色 Token + 磨砂玻璃工具类
 │   └── icon.svg
 ├── components/
-│   ├── chat/                    # chat-room（聊天室）/ message-bubble（气泡）
+│   ├── chat/                    # chat-room（聊天室）/ message-bubble（气泡）/ memory-dialog（记忆/知识库）
 │   ├── console/                 # visual-panel / control-panel / status-bar /
-│   │                            # stats-panel / model-select / background-select / connect-actions
+│   │                            # stats-panel / model-select / background-select / connect-actions / settings-dialog
 │   └── ui/                      # button / card / radio-group / switch（shadcn 风格，无 Radix 依赖）
 ├── config/
-│   └── character.config.ts      # ★ 人物配置（人设/立绘/模型/背景包全在这里）
+│   └── character.config.ts      # ★ 人物配置（人设/头像/立绘/模型/背景包全在这里）
+│   └── persona-iris.md          # 人设原文存档
+├── hooks/
+│   └── use-dialog-lock.ts       # 弹窗 Esc 关闭 + 背景滚动锁定（复用）
 ├── lib/
 │   ├── api.ts                   # 客户端流式请求封装（SSE 解析）
 │   ├── deepseek.ts              # 服务端 DeepSeek 流式调用（Vercel AI SDK）
+│   ├── providers.ts             # models / balance 探测
+│   ├── retrieval.ts             # 轻量 RAG（二元组检索）
+│   ├── security.ts              # 客户端/服务端 Key 与 baseURL 解析（防 SSRF）
+│   ├── http.ts / id.ts          # 复用工具（json 响应 / 唯一 id）
 │   └── utils.ts                 # cn()
-├── public/portraits/            # 4 张立绘占位图（换成同名 PNG/JPG 即可）
-├── store/
-│   ├── console-store.ts         # 控制台状态（Zustand）
-│   └── chat-store.ts            # 聊天记录（Zustand persist → localStorage）
+├── public/portraits/            # 3 张立绘 + 1 张头像（换成同名 PNG/JPG 即可）
+├── store/                       # console / chat / settings / memory / knowledge（Zustand）
 ├── types/index.ts
 ├── .env.local.example
 ├── Dockerfile
@@ -76,12 +85,12 @@ lucia-companion/
 修改 `config/character.config.ts`：
 
 - `name` / `displayName` / `tagline` / `companionTitle` — 名称与标语
-- `portraits[]` — 立绘数组（表情/服装），文件放 `public/portraits/`，替换同名文件即可换图，或改 `src` 指向新文件
+- `avatar` — 圆形头像（顶栏 / 气泡 / 空状态）
+- `portraits[]` — 立绘数组（状态/表情/服装），文件放 `public/portraits/`，替换同名文件即可换图，或改 `src` 指向新文件
 - `fullSystemPrompt` — 完整背景（完整人格与成长模型）的 System Prompt
 - `liteSystemPrompt` — 精简背景（关键设定）的 System Prompt
 - `modelOptions[]` — 模型卡片（标题/描述/`apiModel` 实际模型名）
 - `backgroundPacks[]` — 背景包选项
-- `stats[]` — 统计面板占位数据
 
 ## API 说明
 
@@ -111,7 +120,7 @@ lucia-companion/
 **对方如何使用**：打开地址后，点控制台右上角 ⚙「API 设置」，填入**他自己的** DeepSeek Key 保存即可开始聊天——Key 保存在他自己的浏览器里，你的服务端无需配置任何密钥，也不需要你出 API 费用。
 
 - **源码分享**：打包本目录（去掉 `node_modules/` 和 `.next/`），对方 `pnpm install && pnpm dev` 并填入自己的 Key
-- **Docker**：`docker build -t lucia-companion . && docker run -p 3000:3000 lucia-companion`
+- **Docker**：`docker build -t rin-companion . && docker run -p 3000:3000 rin-companion`
 
 ## 免费部署（不买域名，永久链接，不依赖本机开机）
 

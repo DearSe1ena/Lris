@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { listModels } from "@/lib/providers";
+import { resolveApiConfig } from "@/lib/security";
+import { json } from "@/lib/http";
 
 /** edge 运行时：Vercel / Cloudflare Pages / 本地 dev 三端通用 */
 export const runtime = "edge";
@@ -17,24 +19,17 @@ export async function POST(req: NextRequest) {
     return json({ error: "请求体不是合法 JSON" }, 400);
   }
 
-  const { apiKey: clientKey, baseURL } = payload ?? {};
-  const apiKey = clientKey?.trim() || process.env.DEEPSEEK_API_KEY;
+  const { apiKey: clientKey, baseURL: clientUrl } = payload ?? {};
+  const { apiKey, baseURL } = resolveApiConfig(clientKey, clientUrl);
   if (!apiKey) {
     return json({ error: "未提供 API Key：请先在页面「API 设置」中填写" }, 400);
   }
 
   try {
-    const models = await listModels(baseURL?.trim() || undefined, apiKey);
+    const models = await listModels(baseURL, apiKey);
     return json({ models }, 200);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return json({ error: message }, 502);
   }
-}
-
-function json(data: unknown, status: number) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-  });
 }

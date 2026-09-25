@@ -18,7 +18,7 @@ import { streamChat } from "@/lib/api";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { MemoryDialog } from "@/components/chat/memory-dialog";
 import { cn } from "@/lib/utils";
-import type { ConnectionStatus } from "@/types";
+import type { ChatTurn, ConnectionStatus } from "@/types";
 
 const STATUS_PILL: Record<
   ConnectionStatus,
@@ -55,6 +55,15 @@ function formatChatError(error: unknown): string {
     hint = "（连接中断或响应超时：可重试一次，或改用 Flash 模型）";
   }
   return `（出错了：${message}）${hint}`;
+}
+
+/** 取最近 12 条非空消息作为上下文（排除正在流式占位的空回复） */
+function buildHistory(excludeId?: string): ChatTurn[] {
+  return useChatStore
+    .getState()
+    .messages.filter((m) => m.id !== excludeId && m.content.trim().length > 0)
+    .slice(-12)
+    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 }
 
 /** 聊天室：流式打字机效果 + 可中途停止 + localStorage 持久化 */
@@ -108,11 +117,7 @@ export function ChatRoom() {
     const assistantId = addMessage({ role: "assistant", content: "" });
 
     // 最近 12 条作为上下文（不含刚创建的空回复占位）
-    const history = useChatStore
-      .getState()
-      .messages.filter((m) => m.id !== assistantId && m.content.trim().length > 0)
-      .slice(-12)
-      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+    const history = buildHistory(assistantId);
 
     // 知识库检索（轻量 RAG）：以本条消息为查询召回相关资料
     const contexts = retrieveTopK(text, useKnowledgeStore.getState().entries);
@@ -146,7 +151,7 @@ export function ChatRoom() {
 
   const handleStop = () => abortRef.current?.abort();
 
-  /** 主动联系：以隐藏系统消息触发模型，让凛主动发一条消息（不追发未回应的消息） */
+  /** 主动联系：以隐藏系统消息触发模型，让简璃主动发一条消息（不追发未回应的消息） */
   const sendProactive = useCallback(async () => {
     if (!proactive || isStreaming || proactiveBusyRef.current) return;
     if (status === "generating") return;
@@ -155,14 +160,21 @@ export function ChatRoom() {
     proactiveBusyRef.current = true;
     proactiveSentRef.current = true;
 
+    // 读取最新配置：避免把 model/background/memories 对象放进依赖数组造成频繁重建
+    const currentModelId = useConsoleStore.getState().modelId;
+    const currentBackgroundId = useConsoleStore.getState().backgroundId;
+    const customModels = useSettingsStore.getState().customModels;
+    const currentModel =
+      [...modelOptions, ...customModels].find((m) => m.id === currentModelId) ??
+      modelOptions[0];
+    const currentBackground =
+      backgroundPacks.find((b) => b.id === currentBackgroundId) ?? backgroundPacks[0];
+    const currentMemories = useMemoryStore.getState().memories;
+
     const assistantId = addMessage({ role: "assistant", content: "" });
     const trigger = buildProactiveTrigger(new Date());
 
-    const history = useChatStore
-      .getState()
-      .messages.filter((m) => m.id !== assistantId && m.content.trim().length > 0)
-      .slice(-12)
-      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+    const history = buildHistory(assistantId);
 
     // 以最近一条用户消息为查询，召回知识库相关资料
     const lastUser =
@@ -177,10 +189,10 @@ export function ChatRoom() {
     try {
       await streamChat({
         messages: [...history, { role: "user", content: trigger }],
-        model: model.apiModel,
-        backgroundMode: background.mode,
+        model: currentModel.apiModel,
+        backgroundMode: currentBackground.mode,
         signal: controller.signal,
-        memories: memories.map((m) => m.content),
+        memories: currentMemories.map((m) => m.content),
         contexts,
         onDelta: (delta) => appendContent(assistantId, delta),
       });
@@ -200,9 +212,6 @@ export function ChatRoom() {
     proactive,
     isStreaming,
     status,
-    model,
-    background,
-    memories,
     addMessage,
     appendContent,
     setStreaming,
@@ -217,7 +226,7 @@ export function ChatRoom() {
     }
   }, [messages]);
 
-  // 首次进入且无历史：稍候让凛主动开场
+  // 首次进入且无历史：稍候让简璃主动开场
   useEffect(() => {
     if (!mounted || !proactive || messages.length > 0) return;
     const t = setTimeout(() => {
@@ -265,7 +274,7 @@ export function ChatRoom() {
         </button>
         <div className="flex items-center gap-3">
           <img
-            src={characterConfig.portraits[0].src}
+            src={characterConfig.avatar}
             alt=""
             className="h-9 w-9 rounded-full object-cover ring-2 ring-white/10"
           />
@@ -318,7 +327,7 @@ export function ChatRoom() {
           {messages.length === 0 && (
             <div className="flex flex-col items-center gap-6 pt-14 text-center">
               <img
-                src={characterConfig.portraits[1].src}
+                src={characterConfig.avatar}
                 alt={characterConfig.displayName}
                 className="h-24 w-24 rounded-full object-cover shadow-2xl shadow-primary/20 ring-4 ring-white/10"
               />

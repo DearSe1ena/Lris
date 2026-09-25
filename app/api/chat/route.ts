@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { buildSystemPrompt } from "@/config/character.config";
 import { streamDeepSeekCompletion } from "@/lib/deepseek";
+import { resolveApiConfig } from "@/lib/security";
+import { json } from "@/lib/http";
 import type { BackgroundMode, ChatTurn } from "@/types";
 
 /** edge 运行时：Vercel / Cloudflare Pages / 本地 dev 三端通用 */
@@ -43,7 +45,8 @@ export async function POST(req: NextRequest) {
     contexts,
   } = payload ?? {};
 
-  const apiKey = clientKey?.trim() || process.env.DEEPSEEK_API_KEY;
+  // 客户端自带 Key 才允许自定义 baseURL；服务端 Key 强制走服务端地址（防 SSRF/Key 泄露）
+  const { apiKey, baseURL } = resolveApiConfig(clientKey, clientUrl);
   if (!apiKey) {
     return json(
       {
@@ -102,7 +105,7 @@ export async function POST(req: NextRequest) {
       systemPrompt: promptParts.join("\n\n"),
       messages,
       signal: req.signal,
-      baseURL: clientUrl?.trim() || undefined,
+      baseURL,
     });
 
     const sse = upstream.pipeThrough(
@@ -129,11 +132,4 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : String(error);
     return json({ error: `上游模型请求失败：${message}` }, 502);
   }
-}
-
-function json(data: unknown, status: number) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-  });
 }

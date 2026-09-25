@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X, BookHeart, Database, Plus, Trash2, RotateCcw } from "lucide-react";
 import { useMemoryStore } from "@/store/memory-store";
 import { useKnowledgeStore } from "@/store/knowledge-store";
+import { useDialogLock } from "@/hooks/use-dialog-lock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ interface MemoryDialogProps {
 
 /**
  * 记忆与知识库：
- * - 记忆：重要的事（生日、喜好、约定），凛每次聊天都会记得；
+ * - 记忆：重要的事（生日、喜好、约定），简璃每次聊天都会记得；
  * - 知识库：粘贴文档资料，聊天时自动检索相关内容作为参考（轻量 RAG）。
  */
 export function MemoryDialog({ open, onClose }: MemoryDialogProps) {
@@ -37,19 +38,7 @@ export function MemoryDialog({ open, onClose }: MemoryDialogProps) {
   const [kContent, setKContent] = useState("");
 
   // Esc 关闭 + 锁定背景滚动
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
+  useDialogLock(open, onClose);
 
   if (!open) return null;
 
@@ -122,7 +111,7 @@ export function MemoryDialog({ open, onClose }: MemoryDialogProps) {
         {tab === "memory" ? (
           <>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              记录重要的事（生日、喜好、约定、烦恼），凛会在每次聊天时记得它们，并在合适的时候自然地提起。
+              记录重要的事（生日、喜好、约定、烦恼），简璃会在每次聊天时记得它们，并在合适的时候自然地提起。
             </p>
 
             <div className="mt-3 flex gap-2">
@@ -145,7 +134,7 @@ export function MemoryDialog({ open, onClose }: MemoryDialogProps) {
             <div className="mt-4 space-y-2">
               {memories.length === 0 ? (
                 <p className="py-6 text-center text-xs text-muted-foreground">
-                  还没有记忆。添加第一条，让凛开始记住你。
+                  还没有记忆。添加第一条，让简璃开始记住你。
                 </p>
               ) : (
                 memories.map((m) => (
@@ -183,7 +172,7 @@ export function MemoryDialog({ open, onClose }: MemoryDialogProps) {
         ) : (
           <>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              粘贴文档资料。聊天时会自动检索相关内容作为参考（轻量 RAG：分块 → 检索 → 注入），让凛的回答更准确。
+              粘贴文档资料。聊天时会自动检索相关内容作为参考（轻量 RAG：分块 → 检索 → 注入），让简璃的回答更准确。
             </p>
 
             <div className="mt-3 space-y-2">

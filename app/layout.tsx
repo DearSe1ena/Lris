@@ -2,11 +2,11 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PERSONA · Rin — 才不是特意为你准备的",
-  description: "你的专属大小姐 · AI 虚拟伴侣控制台",
+  title: "PERSONA · Iris — 白天高岭之花，回家只做你的网瘾宅女",
+  description: "你的合法妻子 简璃 · AI 虚拟伴侣控制台",
   appleWebApp: {
     capable: true,
-    title: "凛",
+    title: "简璃",
     statusBarStyle: "black-translucent",
   },
   icons: {

@@ -8,13 +8,13 @@ export interface StreamChatOptions {
   /** 每收到一段增量文本时回调，用于打字机效果 */
   onDelta: (text: string) => void;
   signal?: AbortSignal;
-  /** 长期记忆条目（注入 System Prompt，让凛跨会话记住） */
+  /** 长期记忆条目（注入 System Prompt，让简璃跨会话记住） */
   memories?: string[];
   /** 知识库检索命中的参考资料（轻量 RAG 上下文注入） */
   contexts?: string[];
 }
 
-/** 生成用户本地时间上下文（让凛知道现在几月几号、星期几、几点） */
+/** 生成用户本地时间上下文（让简璃知道现在几月几号、星期几、几点） */
 function buildTimeContext(date: Date): string {
   const week = ["日", "一", "二", "三", "四", "五", "六"];
   const pad = (n: number) => String(n).padStart(2, "0");

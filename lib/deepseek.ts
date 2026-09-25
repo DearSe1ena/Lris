@@ -10,11 +10,20 @@ import type { ChatTurn } from "@/types";
 export const DEEPSEEK_BASE_URL =
   process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
 
-/** 防御性修正：去掉用户/配置里可能误带的 /chat/completions 或 /v1 尾巴 */
+/**
+ * 防御性修正：去掉用户/配置里可能误带的 /chat/completions、/v1、/models、
+ * /user/balance 等尾巴，并在缺省协议时补 https://（空串回退到默认地址）。
+ */
 export function normalizeBaseURL(input: string): string {
-  return input
-    .replace(/\/(v1\/)?chat\/completions\/?$/, "")
+  const cleaned = input
+    .trim()
+    .replace(/\/(v1\/)?chat\/completions\/?$/i, "")
+    .replace(/\/(models|user\/balance)\/?$/i, "")
+    .replace(/\/v1\/?$/i, "")
     .replace(/\/+$/, "");
+
+  if (!cleaned) return DEEPSEEK_BASE_URL;
+  return /^https?:\/\//i.test(cleaned) ? cleaned : `https://${cleaned}`;
 }
 
 export interface DeepSeekStreamOptions {

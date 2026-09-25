@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 /** PWA manifest：支持「添加到主屏幕」，像 App 一样全屏打开 */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "PERSONA · Rin — 才不是特意为你准备的",
-    short_name: "凛",
-    description: "你的专属大小姐 · AI 虚拟伴侣",
+    name: "PERSONA · Iris — 白天高岭之花，回家只做你的网瘾宅女",
+    short_name: "简璃",
+    description: "你的合法妻子 简璃 · AI 虚拟伴侣",
     start_url: "/",
     display: "standalone",
     background_color: "#0b0912",

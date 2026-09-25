@@ -1,5 +1,5 @@
 # Cloudflare Pages 部署配置（免费 *.pages.dev 域名，无需购买）
-name = "lucia-companion"
+name = "rin-companion"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = ".vercel/output/static"
 
