@@ -66,6 +66,14 @@ function buildHistory(excludeId?: string): ChatTurn[] {
     .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 }
 
+/** 当前存储里最后一条用户消息的本地时间戳（用于计算距上次互动隔了多久） */
+function getLastInteractionAt(): number | undefined {
+  const users = useChatStore
+    .getState()
+    .messages.filter((m) => m.role === "user");
+  return users[users.length - 1]?.createdAt;
+}
+
 /** 聊天室：流式打字机效果 + 可中途停止 + localStorage 持久化 */
 export function ChatRoom() {
   const router = useRouter();
@@ -113,6 +121,9 @@ export function ChatRoom() {
     if (!text || isStreaming) return;
     setInput("");
 
+    // 距上次互动：本条发送前，上一条用户消息的时间戳
+    const lastInteractionAt = getLastInteractionAt();
+
     addMessage({ role: "user", content: text });
     const assistantId = addMessage({ role: "assistant", content: "" });
 
@@ -135,6 +146,7 @@ export function ChatRoom() {
         signal: controller.signal,
         memories: memories.map((m) => m.content),
         contexts,
+        lastInteractionAt,
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {
@@ -175,6 +187,8 @@ export function ChatRoom() {
     const trigger = buildProactiveTrigger(new Date());
 
     const history = buildHistory(assistantId);
+    // 距上次互动：用户最后一次发言的时间戳
+    const lastInteractionAt = getLastInteractionAt();
 
     // 以最近一条用户消息为查询，召回知识库相关资料
     const lastUser =
@@ -194,6 +208,7 @@ export function ChatRoom() {
         signal: controller.signal,
         memories: currentMemories.map((m) => m.content),
         contexts,
+        lastInteractionAt,
         onDelta: (delta) => appendContent(assistantId, delta),
       });
     } catch (error) {
@@ -282,9 +297,11 @@ export function ChatRoom() {
             <p className="text-sm font-semibold leading-tight">
               {characterConfig.name}
             </p>
-            <p className="text-[11px] text-muted-foreground">
-              {characterConfig.tagline}
-            </p>
+            {characterConfig.tagline && (
+              <p className="text-[11px] text-muted-foreground">
+                {characterConfig.tagline}
+              </p>
+            )}
           </div>
         </div>
 
@@ -333,9 +350,11 @@ export function ChatRoom() {
               />
               <div className="space-y-2">
                 <p className="text-lg font-medium">{characterConfig.greeting}</p>
-                <p className="text-sm text-muted-foreground">
-                  {characterConfig.companionTitle}
-                </p>
+                {characterConfig.companionTitle && (
+                  <p className="text-sm text-muted-foreground">
+                    {characterConfig.companionTitle}
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {characterConfig.suggestions.map((s) => (

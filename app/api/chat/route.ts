@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     if (timeContext?.trim()) {
       promptParts.push(
-        `【当前时间】${timeContext.trim()}（这是用户本地时间。涉及日期、星期、几点的话题请以此为准，不要臆测。）`,
+        `【当前时间】${timeContext.trim()}（这是用户的本地真实时间，请以此判断早晚/日期/星期，并留意距离上次互动的时长，把时间感自然融进反应，不要臆测时间。）`,
       );
     }
 

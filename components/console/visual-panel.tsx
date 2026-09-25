@@ -88,9 +88,11 @@ export function VisualPanel() {
         <h1 className="mt-2 text-3xl font-semibold tracking-wide text-white">
           {characterConfig.name}
         </h1>
-        <p className="mt-1 text-xs tracking-widest text-white/70">
-          {characterConfig.tagline}
-        </p>
+        {characterConfig.tagline && (
+          <p className="mt-1 text-xs tracking-widest text-white/70">
+            {characterConfig.tagline}
+          </p>
+        )}
       </header>
 
       {/* 左下标题区（轻浮动） */}
